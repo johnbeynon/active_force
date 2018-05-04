@@ -10,10 +10,6 @@ describe ActiveForce::SObject do
 
   describe ".new" do
     it 'should assigns values when are passed by parameters' do
-      puts Whizbang.instance_methods.sort.inspect
-      w = Whizbang.new
-      w.text = "foobar"
-      puts w.text
       expect(Whizbang.new({ text: 'some text' }).text).to eq 'some text'
     end
   end
