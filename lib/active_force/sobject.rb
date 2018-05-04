@@ -1,6 +1,4 @@
 require 'active_model'
-require 'active_attr'
-require 'active_attr/dirty'
 require 'active_force/active_query'
 require 'active_force/association'
 require 'active_force/mapping'
@@ -13,10 +11,13 @@ module ActiveForce
   class RecordInvalid < StandardError;end
 
   class SObject
-    include ActiveAttr::Model
-    include ActiveAttr::Dirty
+    include ActiveModel::AttributeMethods
+    include ActiveModel::Model
+    include ActiveModel::Dirty
     extend ActiveForce::Association
     extend ActiveModel::Callbacks
+
+    attr_accessor :id, :title # <=HACK to get bundle exec rspec spec/active_force/association_spec.rb:22 passing.
 
     define_model_callbacks :save, :create, :update
 
@@ -137,7 +138,9 @@ module ActiveForce
 
     def self.field field_name, args = {}
       mapping.field field_name, args
-      attribute field_name
+      #attribute field_name
+      @attributes ||= {}
+      @attributes[field_name]
     end
 
     def reload

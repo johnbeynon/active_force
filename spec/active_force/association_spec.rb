@@ -23,7 +23,8 @@ describe ActiveForce::SObject do
     end
 
     it "should return a ActiveQuery object" do
-      expect(post.comments).to be_a ActiveForce::ActiveQuery
+      raise post.inspect
+      #expect(post.comments).to be_a ActiveForce::ActiveQuery
     end
 
     it 'makes only one API call to fetch the associated object' do
