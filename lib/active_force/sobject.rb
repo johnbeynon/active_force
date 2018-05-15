@@ -85,13 +85,47 @@ module ActiveForce
     alias_method :update, :update_attributes
 
     def attributes_and_changes
-      attributes.select{ |attr, key| changed.include? attr }
+      attributes.select{ |attr, key| changed.include? attr.to_s }
+    end
+
+    def self.attribute_names
+      mapping.mappings.keys.map(&:to_s)
+    end
+
+    def self.define_attribute_reader(name, options = Hash.new)
+      wrapper = Module.new do
+        # provided_default = options.fetch(:default) { NO_DEFAULT_PROVIDED }
+        define_method name do
+          # return instance_variable_get("@#{name}") if instance_variable_defined?("@#{name}")
+          # return if provided_default == NO_DEFAULT_PROVIDED
+          # provided_default.respond_to?(:call) && provided_default.call || provided_default
+          return instance_variable_get("@#{name}")
+        end
+      end
+      include wrapper
+    end
+
+    def self.define_attribute_writer(name, options = Hash.new)
+      wrapper = Module.new do
+        define_method "#{name}=" do |val|
+          # if cast_type.is_a?(Symbol)
+          #   cast_type = ActiveModel::Type.lookup(cast_type, **options.except(*SERVICE_ATTRIBUTES))
+          # end
+          # deserialized_value = cast_type.cast(val)
+          send(:"#{name}_will_change!") unless instance_variable_get("@#{name}") == val
+          instance_variable_set("@#{name}", val)
+        end
+      end
+      include wrapper
     end
 
     def attributes
-      Hash[*self.class.mapping.mappings.keys.map { |field|
-        [field, self.send(field)]
-      }.flatten]
+      # Hash[*self.class.mapping.mappings.keys.map { |field|
+      #   [field, self.send(field)]
+      # }]
+      self.class.mapping.mappings.keys.each_with_object(Hash.new) {|field, hsh|
+        hsh[field] = self.send(field)
+      }
     end
 
     def create!
@@ -151,8 +185,10 @@ module ActiveForce
 
     def self.field field_name, args = {}
       mapping.field field_name, args
-      attr_accessor field_name
+      # attr_accessor field_name
       define_attribute_methods field_name
+      define_attribute_reader field_name
+      define_attribute_writer field_name
       #attribute field_name
       # @attributes ||= {}
       # @attributes[field_name]

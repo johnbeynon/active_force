@@ -86,6 +86,10 @@ describe ActiveForce::SObject do
       context 'on update' do
         let(:sundae) { IceCream.new(id: '1') }
         it 'formats the picklist values' do
+          puts sundae.inspect
+          puts sundae.attributes.inspect
+          puts sundae.changes.inspect
+          puts sundae.changed.inspect
           expect(client).to receive(:update!).with('IceCream__c', {'Flavors__c' => 'chocolate;vanilla;strawberry', 'Id' => '1'})
           sundae.save
         end
