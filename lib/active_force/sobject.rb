@@ -84,6 +84,16 @@ module ActiveForce
 
     alias_method :update, :update_attributes
 
+    def attributes_and_changes
+      attributes.select{ |attr, key| changed.include? attr }
+    end
+
+    def attributes
+      Hash[*self.class.mapping.mappings.keys.map { |field|
+        [field, self.send(field)]
+      }.flatten]
+    end
+
     def create!
       validate!
       run_callbacks :save do
